@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BÀI 12: ĐƯỜNG THẲNG VÀ MẶT PHẲNG SONG SONG (ĐẦY ĐỦ TỪNG HÌNH 3D SGK)</title>
+    
+    <script>
+        window.MathJax = { 
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], processEscapes: true },
+            svg: { fontCache: 'global' },
+            startup: { typeset: true }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+ 
+    <style>
+        :root {
+            --primary: #0056b3; --secondary: #eef2f5; --text: #333;
+            --correct: #d4edda; --correct-border: #c3e6cb;
+            --incorrect: #f8d7da; --incorrect-border: #f5c6cb;
+            --graph-blue: #0056b3; --graph-red: #dc3545; --font-size: 14pt;
+            --illu-size: 300px; 
+        }
+        * { box-sizing: border-box; } 
+        body { font-family: 'Segoe UI', sans-serif; font-size: var(--font-size); line-height: 1.6; color: var(--text); max-width: 1020px; margin: 0 auto; padding: 10px 20px; background-color: #f4f7f6; transition: max-width 0.3s ease, font-size 0.2s ease; overflow-x: hidden; }
+        h1, h2, h3, h4 { color: var(--primary); margin-top: 0; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%;}
+        .theory-box { border-left: 5px solid var(--primary); }
+        .theory-section { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px dashed #ccc; padding-bottom: 24px;}
+        .theory-section:last-child { border-bottom: none; }
+        .theory-content { flex: 1 1 52%; min-width: 280px; padding-right: 18px; }
+        .theory-illu { flex: 0 0 var(--illu-size); width: var(--illu-size); text-align: center; background: #fafbfc; border-radius: 10px; padding: 10px; border: 1px solid #d0d7de; transition: all 0.3s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 68px; }
+        .theory-illu canvas { width: 100%; height: auto; aspect-ratio: 1 / 1; cursor: grab; border-radius: 6px; background: #ffffff; border: 1px solid #eee; touch-action: none; }
+        .theory-illu canvas:active { cursor: grabbing; }
+        .theory-illu span { display: block; font-size: 0.8em; color: #333; font-style: italic; margin-top: 6px; font-weight: 500; }
+        .mini-3d-bar { display: flex; justify-content: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+        .mini-btn { background: #e9ecef; color: #333; border: 1px solid #ced4da; padding: 4px 7px; font-size: 0.72em; border-radius: 4px; cursor: pointer; font-weight: 600; transition: 0.15s; }
+        .mini-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: none; }
+        .mini-btn.active { background: #28a745; color: white; border-color: #28a745; }
+        .mini-btn.fig-select { background: #eef5ff; color: #0056b3; border-color: #9ec5fe; }
+        .mini-btn.fig-select.selected { background: #0056b3; color: #fff; border-color: #004085; }
+
+        /* KHUNG MÔ PHỎNG 3D TƯƠNG TÁC TRUNG TÂM */
+        .sim3d-wrapper { background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%); border: 2px solid var(--primary); border-radius: 10px; padding: 15px; margin: 15px 0 25px 0; }
+        .sim3d-grid { display: flex; flex-wrap: wrap; gap: 15px; align-items: stretch; }
+        .sim3d-stage { flex: 1 1 420px; background: #fff; border-radius: 8px; border: 1px solid #ccd6e0; padding: 10px; text-align: center; position: relative; }
+        .sim3d-stage canvas { width: 100%; max-width: 500px; height: auto; aspect-ratio: 4 / 3; cursor: grab; touch-action: none; }
+        .sim3d-stage canvas:active { cursor: grabbing; }
+        .sim3d-controls { flex: 1 1 280px; background: #fff; border-radius: 8px; border: 1px solid #ccd6e0; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; font-size: 0.88em; }
+        .mode-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+        .mode-btn { padding: 6px 8px; font-size: 0.8em; background: #eef2f5; color: #222; border: 1px solid #ced4da; border-radius: 5px; cursor: pointer; text-align: left; font-weight: bold; transition: 0.2s; }
+        .mode-btn:hover { background: #dce4ec; transform: none; }
+        .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .view-btn-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+        .view-btn { flex: 1 1 45%; padding: 5px 8px; font-size: 0.82em; background: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .view-btn:hover { background: #003d82; }
+        .view-btn.toggle-rot { background: #6c757d; flex: 1 1 100%; font-size: 0.9em; }
+        .view-btn.toggle-rot.running { background: #28a745; }
+        .legend-bar { display: flex; justify-content: center; gap: 15px; font-size: 0.82em; color: #444; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e0e0e0; flex-wrap: wrap; }
+
+        .control-panel { background: var(--secondary); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 9999; box-shadow: 0 6px 10px rgba(0,0,0,0.15); border: 2px solid var(--primary); padding: 8px 10px !important; font-size: 0.85em; }
+        .control-panel label { font-weight: bold; white-space: nowrap; }
+        .control-panel input { width: 45px; padding: 3px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: inherit;}
+        .control-panel button { padding: 5px 10px; font-size: inherit; } 
+        button { background-color: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.3s; font-size: inherit; }
+        button:hover { background-color: #004494; transform: translateY(-1px); }
+        button.submit-btn { background-color: #28a745; font-size: 1.1em; padding: 12px 25px; margin-top: 15px; width: 100%;}
+        button.submit-btn:hover { background-color: #218838; }
+        .font-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px; margin-right: 5px; border-right: 2px solid #ccc; padding-right: 10px; }
+        button.font-btn { background-color: #6c757d; padding: 4px 8px; }
+        button.font-btn:hover { background-color: #5a6268; }
+        .scroll-area { padding: 5px; }
+        .table-responsive { width: 100%; overflow-x: auto; margin: 10px 0; display: block; -webkit-overflow-scrolling: touch; }
+        .question { margin-top: 15px; padding: 15px; border: 1px solid #e2e2e2; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .options { list-style-type: none; padding-left: 0; margin-top: 10px; }
+        .options li { padding: 8px; margin-bottom: 5px; border-radius: 4px; border: 1px solid transparent; transition: 0.2s;}
+        .options label { cursor: pointer; display: flex; align-items: center; gap: 10px; width: 100%;}
+        input[type="radio"] { width: 1.5em; height: 1.5em; cursor: pointer; accent-color: var(--primary); flex-shrink: 0; }
+        .tf-table { width: 100%; border-collapse: collapse; min-width: 500px; text-align: center; }
+        .tf-table th, .tf-table td { border: 1px solid #ddd; padding: 10px; vertical-align: middle; }
+        .tf-table td:first-child { text-align: left; }
+        .short-ans-input { padding: 6px; width: 120px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; font-size: inherit;}
+        .is-correct { background-color: var(--correct) !important; border-color: var(--correct-border) !important; }
+        .is-incorrect { background-color: var(--incorrect) !important; border-color: #f5c6cb !important; }
+        .feedback { font-weight: bold; margin-left: 10px; font-size: 0.9em; }
+        .feedback.text-correct { color: #155724; }
+        .feedback.text-incorrect { color: #721c24; }
+        .advice-box { margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1em; display: none; }
+        .tip-box { padding: 12px 15px; margin: 12px 0; border-radius: 6px; border-left: 5px solid; font-size: 0.95em; }
+        .tip-yellow { background: #fff3cd; border-color: #ffc107; color: #856404; }
+        .tip-green { background: #d4edda; border-color: #28a745; color: #155724; }
+        .tip-blue { background: #e7f3fe; border-color: #0056b3; color: #004085; }
+        .tip-red { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .tip-title { font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block;}
+        ul.theory-list { margin: 5px 0 10px 20px; padding: 0; }
+        ul.theory-list li { margin-bottom: 6px; }
+        @media (max-width: 900px) {
+            .control-panel { flex-direction: row; gap: 6px; padding: 6px !important; }
+            .font-controls { border-right: none; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 2px; width: 100%; justify-content: center; margin-right: 0;}
+            .box { padding: 10px; }
+            body { padding: 2px; }
+            .theory-illu { flex: 1 1 100%; max-width: var(--illu-size); margin: 15px auto 0 auto; position: static; }
+            .theory-content { padding-right: 0; min-width: 100%; }
+            .tf-table { min-width: 100%; font-size: 0.9em; } 
+            .question { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 10px; } 
+        }
+    </style>
+</head>
+<body>
+ 
+    <div class="box control-panel">
+        <div class="font-controls">
+            <button class="font-btn" onclick="toggleFullScreen()" title="Bật/Tắt chế độ Toàn Màn Hình (F11)">📺 Toàn màn hình</button>
+            <button class="font-btn" onclick="toggleWidth()" title="Phóng to/Thu nhỏ khung viền trang web">↔️ Đổi khung</button>
+            <span style="margin: 0 5px; color: #ccc;">|</span>
+            <label>Cỡ chữ:</label>
+            <button class="font-btn" onclick="changeFontSize(-2)">A-</button>
+            <span id="font-size-display" style="font-weight: bold; width: 40px; text-align: center;">14pt</span>
+            <button class="font-btn" onclick="changeFontSize(2)">A+</button>
+            <span style="margin: 0 5px; color: #ccc;">|</span>
+            <label>Cỡ hình:</label>
+            <button class="font-btn" onclick="changeIlluSize(-30)">-</button>
+            <span id="illu-size-display" style="font-weight: bold; width: 48px; text-align: center;">300px</span>
+            <button class="font-btn" onclick="changeIlluSize(30)">+</button>
+        </div>
+        <label>Dạng 1 (4 PA): <input type="number" id="numType1" value="5" min="0" max="15"></label>
+        <label>Dạng 2 (Đ/S): <input type="number" id="numType2" value="3" min="0" max="15"></label>
+        <label>Dạng 3 (Ngắn): <input type="number" id="numType3" value="3" min="0" max="15"></label>
+        <button onclick="generateTest()">TẠO ĐỀ NGẪU NHIÊN SIÊU ĐA DẠNG</button>
+    </div>
+ 
+    <div class="box theory-box">
+        <div style="font-size: 0.9em; font-weight: bold; color: #555; text-transform: uppercase;">CHƯƠNG IV: QUAN HỆ SONG SONG TRONG KHÔNG GIAN</div>
+        <h1 style="margin-bottom: 5px;">BÀI 12: ĐƯỜNG THẲNG VÀ MẶT PHẲNG SONG SONG</h1>
+        <div style="text-align: right; font-style: italic; color: var(--primary); font-weight: bold; border-bottom: 1px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;">
+            CHI BỘ TRƯỜNG THPT TRUNG LẬP - TUYÊN GIÁO | TỔ TOÁN - HĐTN
+        </div>
+
+        <!-- ================= PHÒNG THÍ NGHIỆM 3D TRUNG TÂM ================= -->
+        <div class="sim3d-wrapper">
+            <h3 style="margin-bottom: 6px; text-align: center; color: #004085;">🌐 BẢNG ĐIỀU KHIỂN 3D TỔNG HỢP CÁC HÌNH VẼ BÀI 12 SGK</h3>
+            <p style="text-align: center; font-size: 0.86em; color: #555; margin-top: 0; margin-bottom: 10px;">
+                <i>💡 Chọn trực tiếp các hình vẽ (từ H.4.35 đến H.4.39) để phóng to và xoay $360^\circ$!</i>
+            </p>
+            <div class="sim3d-grid">
+                <div class="sim3d-stage">
+                    <canvas id="main3DCanvas" width="520" height="390"></canvas>
+                    <div id="main3DCaption" style="font-weight: bold; color: var(--primary); font-size: 0.92em; margin-top: 4px;">
+                        Các vị trí tương đối của đường thẳng và mặt phẳng
+                    </div>
+                    <div class="legend-bar">
+                        <span>━━━ <b>Nét liền:</b> Cạnh / Đường nhìn thấy</span>
+                        <span>╌╌╌ <b>Nét đứt:</b> Cạnh bị che khuất / Đường xuyên mặt phẳng</span>
+                    </div>
+                </div>
+                <div class="sim3d-controls">
+                    <div>
+                        <div style="font-weight: bold; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px;">
+                            🧊 Chọn từng hình vẽ trong SGK:
+                        </div>
+                        <div class="mode-btn-group">
+                            <button class="mode-btn active" id="modeBtn0" onclick="setMainMode(0)">Định nghĩa: 3 vị trí</button>
+                            <button class="mode-btn" id="modeBtn1" onclick="setMainMode(1)">H.4.35: Ví dụ 1</button>
+                            <button class="mode-btn" id="modeBtn2" onclick="setMainMode(2)">H.4.36: HĐ 2 & Định lí 1</button>
+                            <button class="mode-btn" id="modeBtn3" onclick="setMainMode(3)">H.4.37: Ví dụ 2</button>
+                            <button class="mode-btn" id="modeBtn4" onclick="setMainMode(4)">H.4.38: Ví dụ 3</button>
+                            <button class="mode-btn" id="modeBtn5" onclick="setMainMode(5)">H.4.39: Ví dụ 4 (Thiết diện)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-weight: bold; color: var(--primary); font-size: 0.88em;">🔄 Điều khiển góc nhìn 3D:</div>
+                        <div class="view-btn-group">
+                            <button class="view-btn toggle-rot" id="btnMainAutoRot" onclick="toggleMainAutoRotate()">▶️ Bật tự động xoay 360°</button>
+                            <button class="view-btn" onclick="resetMainStandardView()">📐 Góc chuẩn SGK</button>
+                            <button class="view-btn" onclick="setMainView(0.55, 0.35)">↗️ Xoay góc phải</button>
+                            <button class="view-btn" onclick="setMainView(-2.15, 0.35)">↙️ Xoay mặt sau</button>
+                            <button class="view-btn" onclick="setMainView(-0.45, 1.25)">⬇️ Nhìn từ đỉnh xuống</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- ================= PHẦN 1: ĐƯỜNG THẲNG SONG SONG VỚI MẶT PHẲNG ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>1. Đường Thẳng Song Song Với Mặt Phẳng</h3>
+                <p><b>a) Hoạt động 1:</b> Quan sát hình ảnh khung thành bóng đá và nhận xét vị trí của xà ngang, cột dọc với mặt đất.</p>
+                <ul class="theory-list">
+                    <li>Xà ngang <b>song song</b> với mặt đất (không có điểm chung).</li>
+                    <li>Cột dọc, thanh chống, thanh bên <b>cắt</b> mặt đất.</li>
+                </ul>
+
+                <p><b>b) Định nghĩa:</b> Cho đường thẳng $d$ và mặt phẳng $(\alpha)$.</p>
+                <ul class="theory-list">
+                    <li>Nếu $d$ và $(\alpha)$ <b>không có điểm chung</b> thì ta nói $d$ song song với $(\alpha)$, kí hiệu: $d \parallel (\alpha)$.</li>
+                    <li>Nếu $d$ và $(\alpha)$ có <b>một điểm chung duy nhất</b> $M$ thì $d$ cắt $(\alpha)$ tại $M$, kí hiệu: $d \cap (\alpha) = \{M\}$.</li>
+                    <li>Nếu $d$ và $(\alpha)$ có <b>nhiều hơn một điểm chung</b> thì $d$ nằm trong $(\alpha)$ (hay $(\alpha)$ chứa $d$), kí hiệu: $d \subset (\alpha)$.</li>
+                </ul>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec0" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub0_0" onclick="setMiniSub(0, 0)">Song song</button>
+                    <button class="mini-btn fig-select" id="sub0_1" onclick="setMiniSub(0, 1)">Cắt nhau</button>
+                    <button class="mini-btn fig-select" id="sub0_2" onclick="setMiniSub(0, 2)">Nằm trong</button>
+                    <button class="mini-btn" id="btnRot0" onclick="toggleMiniRot(0, 'btnRot0')">▶️ Tự xoay</button>
+                </div>
+                <span>Minh họa 3 vị trí tương đối của đường thẳng và mặt phẳng</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 1.2: VÍ DỤ 1 & LUYỆN TẬP 1 ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>Ví Dụ 1 & Luyện Tập 1 (Hình 4.35)</h3>
+                <p><b>• Ví dụ 1 (Hình 4.35):</b> Cho hình tứ diện $ABCD$. Trong các mặt phẳng chứa các mặt của hình tứ diện:</p>
+                <ul class="theory-list">
+                    <li><b>a)</b> Đường thẳng $AB$ <b>cắt</b> các mặt phẳng $(ACD)$ và $(BCD)$ (vì có chung 1 điểm $A$ và $B$).</li>
+                    <li><b>b)</b> Đường thẳng $AB$ <b>nằm trong</b> các mặt phẳng $(ABC)$ và $(ABD)$ (vì có 2 điểm chung $A, B$).</li>
+                </ul>
+
+                <p><b>• Luyện tập 1:</b> Xét đường thẳng $AC$:</p>
+                <ul class="theory-list">
+                    <li>Đường thẳng $AC$ <b>cắt</b> mặt phẳng $(BCD)$ tại $C$ và <b>cắt</b> $(ABD)$ tại $A$.</li>
+                    <li>Đường thẳng $AC$ <b>nằm trong</b> mặt phẳng $(ABC)$ và $(ACD)$.</li>
+                </ul>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec1" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub1_0" onclick="setMiniSub(1, 0)">Hình 4.35</button>
+                    <button class="mini-btn" id="btnRot1" onclick="toggleMiniRot(1, 'btnRot1')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(1)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec1">Hình 4.35 SGK: Hình tứ diện $ABCD$ minh họa các đường thẳng cắt và nằm trong mặt phẳng</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 2.1: ĐIỀU KIỆN (ĐỊNH LÍ 1 & VÍ DỤ 2) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>2. Điều Kiện Và Tính Chất (Hình 4.36 & Hình 4.37)</h3>
+                <p><b>a) Điều kiện để đường thẳng song song mặt phẳng (HĐ2 & Định lí 1):</b></p>
+                <ul class="theory-list">
+                    <li><b>Định lí 1:</b> Nếu đường thẳng $a$ <b>không nằm trong</b> mặt phẳng $(P)$ và <b>song song với một đường thẳng</b> nằm trong $(P)$ thì $a$ song song với $(P)$.
+                    <br>Kí hiệu: $a \not\subset (P)$, $b \subset (P)$, $a \parallel b \Rightarrow a \parallel (P)$.</li>
+                </ul>
+                <div class="tip-box tip-yellow">
+                    <span class="tip-title">📌 Lưu ý:</span>
+                    Nếu bỏ điều kiện "$a$ không nằm trong $(P)$" thì phát biểu không còn đúng. Khi đó, $a$ có thể trùng với $b$ hoặc $a$ nằm trong $(P)$ và song song với $b$.
+                </div>
+
+                <p><b>b) Ví dụ 2 (Hình 4.37):</b> Cho 3 đường thẳng $a, b, c$ đôi một song song và không đồng phẳng.</p>
+                <ul class="theory-list">
+                    <li>Chứng minh $a \parallel mp(b, c)$: Vì $a, b, c$ không đồng phẳng nên $a \not\subset mp(b,c)$. Mặt khác $a \parallel b$ và $b \subset mp(b,c)$. Do đó $a \parallel mp(b,c)$.</li>
+                    <li><b>Luyện tập 2:</b> Tương tự, $c \not\subset mp(a,b)$ và $c \parallel a \Rightarrow c \parallel mp(a,b)$. $b \not\subset mp(a,c)$ và $b \parallel a \Rightarrow b \parallel mp(a,c)$.</li>
+                </ul>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec2" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select selected" id="sub2_0" onclick="setMiniSub(2, 0)">Hình 4.36</button>
+                    <button class="mini-btn fig-select" id="sub2_1" onclick="setMiniSub(2, 1)">Hình 4.37</button>
+                    <button class="mini-btn" id="btnRot2" onclick="toggleMiniRot(2, 'btnRot2')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(2)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec2">Hình 4.36 SGK: $a \parallel b$ và $b \subset (P) \Rightarrow a \parallel (P)$</span>
+            </div>
+        </div>
+
+        <!-- ================= PHẦN 2.2: VÍ DỤ 3 & TÍNH CHẤT (ĐỊNH LÍ 2) ================= -->
+        <div class="theory-section">
+            <div class="theory-content">
+                <h3>2.2. Ví Dụ 3 & Tính Chất (Định Lí 2 - Hình 4.38 & Hình 4.39)</h3>
+                
+                <p><b>• Ví dụ 3 (Hình 4.38):</b> Cho hai đường thẳng chéo nhau $a$ và $b$.</p>
+                <ul class="theory-list">
+                    <li>Lấy điểm $M \in a$, kẻ đường thẳng $b' \parallel b$ qua $M$. Gọi $(P) = mp(a, b')$.</li>
+                    <li>Vì $b \parallel b'$ và $b' \subset (P)$, đồng thời $b \not\subset (P)$ (do $a,b$ chéo nhau), nên $b \parallel (P)$.</li>
+                    <li><b>Kết luận:</b> Qua một đường thẳng, có duy nhất một mặt phẳng song song với đường thẳng chéo với nó.</li>
+                </ul>
+
+                <p><b>• Tính chất (HĐ3 & Định lí 2):</b></p>
+                <ul class="theory-list">
+                    <li><b>Định lí 2:</b> Cho đường thẳng $a$ song song với mặt phẳng $(P)$. Nếu mặt phẳng $(Q)$ chứa $a$ và cắt $(P)$ theo giao tuyến $b$ thì $b$ <b>song song với $a$</b>.</li>
+                </ul>
+
+                <div class="tip-box tip-green">
+                    <span class="tip-title">💡 Ví dụ 4 (Hình 4.39): Giao tuyến thiết diện</span>
+                    Cho tứ diện $ABCD$, $E \in AC$. Mặt phẳng $(P)$ qua $E$ song song $AB, CD$.
+                    <br>• Mặt phẳng $(ABC)$ chứa $AB \parallel (P)$ nên cắt $(P)$ theo giao tuyến $EF \parallel AB$.
+                    <br>• Các mặt $(ACD)$ và $(BCD)$ chứa $CD \parallel (P)$ nên cắt $(P)$ theo giao tuyến $EH \parallel CD$ và $FG \parallel CD$.
+                    <br>• Suy ra thiết diện tạo bởi là tứ giác $EFGH$. Vì $EF \parallel GH$ (cùng $\parallel AB$) và $EH \parallel FG$ (cùng $\parallel CD$) $\Rightarrow EFGH$ là <b>hình bình hành</b>.
+                </div>
+            </div>
+            <div class="theory-illu">
+                <canvas id="canvasSec3" width="300" height="300"></canvas>
+                <div class="mini-3d-bar">
+                    <button class="mini-btn fig-select" id="sub3_0" onclick="setMiniSub(3, 0)">Hình 4.38</button>
+                    <button class="mini-btn fig-select selected" id="sub3_1" onclick="setMiniSub(3, 1)">Hình 4.39 (Ví dụ 4)</button>
+                    <button class="mini-btn" id="btnRot3" onclick="toggleMiniRot(3, 'btnRot3')">▶️ Tự xoay</button>
+                    <button class="mini-btn" onclick="resetMiniView(3)">📐 Chuẩn</button>
+                </div>
+                <span id="capSec3">Hình 4.39 SGK: Thiết diện $EFGH$ của hình tứ diện $ABCD$ khi cắt bởi mặt phẳng $(P)$ song song với $AB$ và $CD$.</span>
+            </div>
+        </div>
+ 
+    </div>
+ 
+    <div id="output" class="box" style="display: none;">
+        <h2 style="text-align: center; margin-bottom: 15px;">ĐỀ KIỂM TRA ĐÁNH GIÁ NĂNG LỰC - BÀI 12: ĐT & MP SONG SONG</h2>
+        <div class="scroll-area" id="test-content"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="submit-btn" onclick="checkAnswers()" id="submitBtn" style="display:none;">NỘP BÀI & CHẤM ĐIỂM</button>
+        </div>
+        <h3 id="score-display" style="text-align: center; color: #0056b3; margin-top: 15px;"></h3>
+        <div id="advice-display" class="advice-box"></div>
+    </div>
+ 
+    <script>
+        // ================= HỆ THỐNG ĐỒ HỌA 3D SƯ PHẠM BÀI 12 =================
+        function transformPoint3D(pt, yaw, pitch, scale, cx, cy) {
+            let cosY = Math.cos(yaw), sinY = Math.sin(yaw);
+            let cosP = Math.cos(pitch), sinP = Math.sin(pitch);
+            let x1 = -pt.x * sinY + pt.y * cosY;
+            let y1 = -pt.x * cosY - pt.y * sinY;
+            let z1 = pt.z;
+            let screenYUp = z1 * cosP + y1 * sinP;
+            let depth = -y1 * cosP + z1 * sinP;
+            return { x: cx + x1 * scale, y: cy - screenYUp * scale, depth: depth, wx: pt.x, wy: pt.y, wz: pt.z };
+        }
+
+        function isFaceFront(projVerts, faceIndices) {
+            let p0 = projVerts[faceIndices[0]], p1 = projVerts[faceIndices[1]], p2 = projVerts[faceIndices[2]];
+            let crossZ = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
+            return crossZ < 0;
+        }
+
+        function computeFaceVisibility(rawVerts, projVerts, faces) {
+            let cx = 0, cy = 0, cz = 0;
+            rawVerts.forEach(v => { cx += v.x; cy += v.y; cz += v.z; });
+            cx /= rawVerts.length; cy /= rawVerts.length; cz /= rawVerts.length;
+            return faces.map(f => {
+                let v0 = rawVerts[f[0]], v1 = rawVerts[f[1]], v2 = rawVerts[f[2]];
+                let ux = v1.x - v0.x, uy = v1.y - v0.y, uz = v1.z - v0.z;
+                let vx = v2.x - v0.x, vy = v2.y - v0.y, vz = v2.z - v0.z;
+                let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+                let ox = v0.x - cx, oy = v0.y - cy, oz = v0.z - cz;
+                let dotOut = nx * ox + ny * oy + nz * oz;
+                let ordered = dotOut >= 0 ? f : [f[0], f[2], f[1]];
+                return isFaceFront(projVerts, ordered);
+            });
+        }
+
+        function drawPedagogicalEdge(ctx, p1, p2, visible, color = "#222", width = 1.6) {
+            ctx.save(); ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = visible ? width : Math.max(1.2, width - 0.3);
+            if (!visible) ctx.setLineDash([6, 4]);
+            ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); ctx.restore();
+        }
+
+        function drawVertexLabel(ctx, p, label, color = "#111", dx = 6, dy = -6, radius = 3.3) {
+            ctx.save(); ctx.beginPath(); ctx.fillStyle = color; ctx.arc(p.x, p.y, radius, 0, Math.PI * 2); ctx.fill();
+            if (label) { ctx.font = "bold 13px 'Segoe UI', sans-serif"; ctx.fillText(label, p.x + dx, p.y + dy); }
+            ctx.restore();
+        }
+
+        function drawPolygonFill(ctx, pts, fillColor, strokeColor = null, lineWidth = 1.4) {
+            ctx.save(); ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+            ctx.closePath();
+            if (fillColor) { ctx.fillStyle = fillColor; ctx.fill(); }
+            if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth; ctx.stroke(); }
+            ctx.restore();
+        }
+
+        // --- RENDER CÁC HÌNH ĐẶC THÙ CHO BÀI 12 ---
+        function renderSGKFigure3D(ctx, figId, yaw, pitch, scale, cx, cy) {
+            let P = (pt) => transformPoint3D(pt, yaw, pitch, scale, cx, cy);
+
+            if (figId === 'pos_1') { // Song song
+                let pl = [{ x: -1.5, y: -1.5, z: -0.5 }, { x: 1.5, y: -1.5, z: -0.5 }, { x: 1.5, y: 1.5, z: -0.5 }, { x: -1.5, y: 1.5, z: -0.5 }].map(P);
+                drawPolygonFill(ctx, pl, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                let a1 = P({ x: -1.0, y: -1.0, z: 1.0 }), a2 = P({ x: 1.0, y: 1.0, z: 1.0 });
+                drawPedagogicalEdge(ctx, a1, a2, true, "#0056b3", 2.2);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'"; ctx.fillStyle = "#0056b3"; ctx.fillText("d // (α)", a2.x + 10, a2.y); ctx.fillText("α", pl[0].x + 10, pl[0].y - 6); ctx.restore();
+            } 
+            else if (figId === 'pos_2') { // Cắt nhau
+                let pl = [{ x: -1.5, y: -1.5, z: -0.5 }, { x: 1.5, y: -1.5, z: -0.5 }, { x: 1.5, y: 1.5, z: -0.5 }, { x: -1.5, y: 1.5, z: -0.5 }].map(P);
+                drawPolygonFill(ctx, pl, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                let top = P({ x: -0.5, y: -0.5, z: 1.5 }), hit = P({ x: 0, y: 0, z: -0.5 }), bot = P({ x: 0.5, y: 0.5, z: -1.5 });
+                drawPedagogicalEdge(ctx, top, hit, true, "#dc3545", 2.2);
+                drawPedagogicalEdge(ctx, hit, bot, false, "#dc3545", 2.0);
+                drawVertexLabel(ctx, hit, "M", "#dc3545", 8, -4);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'"; ctx.fillStyle = "#dc3545"; ctx.fillText("d cắt (α)", top.x + 5, top.y - 5); ctx.restore();
+            }
+            else if (figId === 'pos_3') { // Nằm trong
+                let pl = [{ x: -1.5, y: -1.5, z: -0.5 }, { x: 1.5, y: -1.5, z: -0.5 }, { x: 1.5, y: 1.5, z: -0.5 }, { x: -1.5, y: 1.5, z: -0.5 }].map(P);
+                drawPolygonFill(ctx, pl, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                let a1 = P({ x: -1.0, y: -0.5, z: -0.5 }), a2 = P({ x: 1.0, y: 0.5, z: -0.5 });
+                drawPedagogicalEdge(ctx, a1, a2, true, "#198754", 2.2);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'"; ctx.fillStyle = "#198754"; ctx.fillText("d ⊂ (α)", a2.x + 10, a2.y); ctx.restore();
+            }
+            else if (figId === '4.35') { // Tứ diện
+                let raw = [{ x: 0.0, y: -0.1, z: 1.85 }, { x: -0.4, y: -1.85, z: -1.1 }, { x: 1.45, y: 0.1, z: -1.1 }, { x: -0.8, y: 1.85, z: -1.1 }];
+                let proj = raw.map(P);
+                let faces = [[1,2,3], [0,1,2], [0,2,3], [0,1,3]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                let edges = [{u:0,v:1,f:[1,3]},{u:0,v:2,f:[1,2]},{u:0,v:3,f:[2,3]},{u:1,v:2,f:[0,1]},{u:2,v:3,f:[0,2]},{u:1,v:3,f:[0,3]}];
+                edges.forEach(e => { drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], fVis[e.f[0]]||fVis[e.f[1]], (e.u===0&&e.v===1) ? "#0056b3" : "#111", (e.u===0&&e.v===1)?2.5:1.8); });
+                drawVertexLabel(ctx, proj[0], "A", "#111", -8, -10); drawVertexLabel(ctx, proj[1], "B", "#111", -18, 4);
+                drawVertexLabel(ctx, proj[2], "C", "#111", -4, 16); drawVertexLabel(ctx, proj[3], "D", "#111", 8, 4);
+            }
+            else if (figId === '4.36') { // Định lí 1
+                let p = [{x:-1.8, y:-1.5, z:-0.5}, {x:1.8, y:-1.5, z:-0.5}, {x:1.8, y:1.5, z:-0.5}, {x:-1.8, y:1.5, z:-0.5}].map(P);
+                let q = [{x:-1.8, y:-0.5, z:1.5}, {x:1.8, y:-0.5, z:1.5}, {x:1.8, y:-1.5, z:-0.5}, {x:-1.8, y:-1.5, z:-0.5}].map(P);
+                drawPolygonFill(ctx, p, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                drawPolygonFill(ctx, q, "rgba(200, 240, 210, 0.4)", "#198754", 1.5);
+                let b1 = P({x:-1.5, y:-1.5, z:-0.5}), b2 = P({x:1.5, y:-1.5, z:-0.5});
+                let a1 = P({x:-1.5, y:-0.5, z:1.5}), a2 = P({x:1.5, y:-0.5, z:1.5});
+                drawPedagogicalEdge(ctx, b1, b2, true, "#111", 2);
+                drawPedagogicalEdge(ctx, a1, a2, true, "#dc3545", 2);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillStyle = "#dc3545"; ctx.fillText("a", a2.x+5, a2.y);
+                ctx.fillStyle = "#111"; ctx.fillText("b", b2.x+5, b2.y);
+                ctx.fillStyle = "#0056b3"; ctx.fillText("P", p[0].x+10, p[0].y-10);
+                ctx.fillStyle = "#198754"; ctx.fillText("Q", q[0].x+10, q[0].y-10);
+                ctx.restore();
+            }
+            else if (figId === '4.37') { // Ví dụ 2 (3 đường song song)
+                let p = [{x:-1.2, y:-1.2, z:0}, {x:1.8, y:-1.2, z:0}, {x:1.8, y:1.2, z:0}, {x:-1.2, y:1.2, z:0}].map(P);
+                drawPolygonFill(ctx, p, "rgba(220,220,220,0.5)");
+                let c1 = P({x:-0.5,y:0,z:-1.5}), c2 = P({x:-0.5,y:0,z:1.5});
+                let b1 = P({x:1.0,y:1.0,z:-1.5}), b2 = P({x:1.0,y:1.0,z:1.5});
+                let a1 = P({x:1.0,y:-1.0,z:-1.5}), a2 = P({x:1.0,y:-1.0,z:1.5});
+                drawPedagogicalEdge(ctx, c1, c2, true, "#111", 2);
+                drawPedagogicalEdge(ctx, b1, b2, true, "#111", 2);
+                drawPedagogicalEdge(ctx, a1, a2, true, "#dc3545", 2.5);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillText("c", c2.x, c2.y-10); ctx.fillText("b", b2.x, b2.y-10);
+                ctx.fillStyle = "#dc3545"; ctx.fillText("a", a2.x, a2.y-10); ctx.restore();
+            }
+            else if (figId === '4.38') { // Ví dụ 3 (chéo nhau)
+                let p = [{x:-1.5, y:-1.5, z:0}, {x:1.5, y:-1.5, z:0}, {x:1.5, y:1.5, z:0}, {x:-1.5, y:1.5, z:0}].map(P);
+                drawPolygonFill(ctx, p, "rgba(215, 238, 255, 0.55)", "#222", 1.5);
+                let b1 = P({x:-1.2, y:0, z:1.5}), b2 = P({x:1.2, y:0, z:1.5}); // b ở trên
+                let bp1 = P({x:-1.2, y:0, z:0}), bp2 = P({x:1.2, y:0, z:0}); // b' trên P
+                let a1 = P({x:0, y:-1.2, z:0}), a2 = P({x:0, y:1.2, z:0}); // a trên P cắt b'
+                let pM = P({x:0, y:0, z:0});
+                drawPedagogicalEdge(ctx, b1, b2, true, "#111", 2);
+                drawPedagogicalEdge(ctx, bp1, bp2, true, "#0056b3", 2); // b'
+                drawPedagogicalEdge(ctx, a1, a2, true, "#dc3545", 2); // a
+                drawVertexLabel(ctx, pM, "M", "#111", 5, 12);
+                ctx.save(); ctx.font = "italic bold 14px 'Segoe UI'";
+                ctx.fillText("b", b2.x+5, b2.y);
+                ctx.fillStyle = "#0056b3"; ctx.fillText("b'", bp2.x+5, bp2.y);
+                ctx.fillStyle = "#dc3545"; ctx.fillText("a", a2.x, a2.y-10);
+                ctx.fillStyle = "#111"; ctx.fillText("P", p[0].x+10, p[0].y-10); ctx.restore();
+            }
+            else if (figId === '4.39') { // Thiết diện EFGH
+                let raw = [{ x: 0.0, y: 0.0, z: 2.0 }, { x: -1.0, y: -1.5, z: -1.1 }, { x: 1.5, y: -0.5, z: -1.1 }, { x: -0.5, y: 1.8, z: -1.1 }];
+                let proj = raw.map(P);
+                let faces = [[1,2,3], [0,1,2], [0,2,3], [0,1,3]];
+                let fVis = computeFaceVisibility(raw, proj, faces);
+                
+                let E = {x: raw[0].x*0.6 + raw[2].x*0.4, y: raw[0].y*0.6 + raw[2].y*0.4, z: raw[0].z*0.6 + raw[2].z*0.4};
+                let F = {x: raw[1].x*0.6 + raw[2].x*0.4, y: raw[1].y*0.6 + raw[2].y*0.4, z: raw[1].z*0.6 + raw[2].z*0.4};
+                let G = {x: raw[1].x*0.6 + raw[3].x*0.4, y: raw[1].y*0.6 + raw[3].y*0.4, z: raw[1].z*0.6 + raw[3].z*0.4};
+                let H = {x: raw[0].x*0.6 + raw[3].x*0.4, y: raw[0].y*0.6 + raw[3].y*0.4, z: raw[0].z*0.6 + raw[3].z*0.4};
+                let pE = P(E), pF = P(F), pG = P(G), pH = P(H);
+
+                drawPolygonFill(ctx, [pE, pF, pG, pH], "rgba(220, 53, 69, 0.35)");
+                
+                let edges = [{u:0,v:1,f:[1,3]},{u:0,v:2,f:[1,2]},{u:0,v:3,f:[2,3]},{u:1,v:2,f:[0,1]},{u:2,v:3,f:[0,2]},{u:1,v:3,f:[0,3]}];
+                edges.forEach(e => { drawPedagogicalEdge(ctx, proj[e.u], proj[e.v], fVis[e.f[0]]||fVis[e.f[1]], "#111", 1.8); });
+                
+                drawPedagogicalEdge(ctx, pE, pF, fVis[1], "#dc3545", 2);
+                drawPedagogicalEdge(ctx, pF, pG, fVis[0], "#dc3545", 2);
+                drawPedagogicalEdge(ctx, pG, pH, fVis[3], "#dc3545", 2);
+                drawPedagogicalEdge(ctx, pH, pE, fVis[2], "#dc3545", 2);
+
+                drawVertexLabel(ctx, proj[0], "A", "#111", -8, -10); drawVertexLabel(ctx, proj[1], "B", "#111", -18, 4);
+                drawVertexLabel(ctx, proj[2], "C", "#111", 5, 10); drawVertexLabel(ctx, proj[3], "D", "#111", 8, 4);
+                drawVertexLabel(ctx, pE, "E", "#dc3545", 5, -5); drawVertexLabel(ctx, pF, "F", "#dc3545", 5, 10);
+                drawVertexLabel(ctx, pG, "G", "#dc3545", -15, 10); drawVertexLabel(ctx, pH, "H", "#dc3545", -15, -5);
+            }
+        }
+
+        const mainFigList = [
+            { fig: 'pos_1', yaw: -0.32, pitch: 0.42, cap: "Các vị trí: Đường thẳng song song, cắt, và nằm trong mặt phẳng" },
+            { fig: '4.35', yaw: -0.28, pitch: 0.34, cap: "Hình 4.35 SGK: Tứ diện $ABCD$ (Đường thẳng cắt và nằm trong mp)" },
+            { fig: '4.36', yaw: -0.35, pitch: 0.36, cap: "Hình 4.36 SGK: Điều kiện $a \\parallel (P)$" },
+            { fig: '4.37', yaw: -0.28, pitch: 0.35, cap: "Hình 4.37 SGK (Ví dụ 2): 3 đường thẳng song song" },
+            { fig: '4.38', yaw: -0.32, pitch: 0.34, cap: "Hình 4.38 SGK (Ví dụ 3): Hai đường thẳng chéo nhau" },
+            { fig: '4.39', yaw: -0.25, pitch: 0.35, cap: "Hình 4.39 SGK (Ví dụ 4): Thiết diện là hình bình hành $EFGH$" }
+        ];
+
+        let mainSim = { mode: 0, yaw: mainFigList[0].yaw, pitch: mainFigList[0].pitch, autoRotate: false, dragging: false, lastX: 0, lastY: 0 };
+        function setMainMode(m) {
+            mainSim.mode = m; mainSim.yaw = mainFigList[m].yaw; mainSim.pitch = mainFigList[m].pitch;
+            for (let i = 0; i < mainFigList.length; i++) {
+                let btn = document.getElementById('modeBtn' + i);
+                if (btn) btn.classList.toggle('active', i === m);
+            }
+            let cap = document.getElementById('main3DCaption'); cap.innerHTML = mainFigList[m].cap;
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([cap]).catch(()=>{});
+        }
+        function toggleMainAutoRotate() { mainSim.autoRotate = !mainSim.autoRotate; updateMainRotBtn(); }
+        function updateMainRotBtn() { let btn = document.getElementById('btnMainAutoRot'); if (btn) { btn.innerHTML = mainSim.autoRotate ? "⏸️ Đang tự xoay 360°" : "▶️ Bật tự động xoay 360°"; btn.classList.toggle('running', mainSim.autoRotate); } }
+        function resetMainStandardView() { mainSim.autoRotate = false; updateMainRotBtn(); mainSim.yaw = mainFigList[mainSim.mode].yaw; mainSim.pitch = mainFigList[mainSim.mode].pitch; }
+        function setMainView(yaw, pitch) { mainSim.autoRotate = false; updateMainRotBtn(); mainSim.yaw = yaw; mainSim.pitch = pitch; }
+
+        let miniSims = [
+            { id: 'canvasSec0', subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0, yaw: -0.32, pitch: 0.42, options: [{fig:'pos_1', yaw:-0.32, pitch:0.42}, {fig:'pos_2', yaw:-0.32, pitch:0.42}, {fig:'pos_3', yaw:-0.32, pitch:0.42}] },
+            { id: 'canvasSec1', subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0, yaw: -0.28, pitch: 0.34, options: [{fig:'4.35', yaw:-0.28, pitch:0.34}] },
+            { id: 'canvasSec2', subIdx: 0, auto: false, dragging: false, lastX: 0, lastY: 0, yaw: -0.35, pitch: 0.36, options: [{fig:'4.36', yaw:-0.35, pitch:0.36}, {fig:'4.37', yaw:-0.28, pitch:0.35}] },
+            { id: 'canvasSec3', subIdx: 1, auto: false, dragging: false, lastX: 0, lastY: 0, yaw: -0.25, pitch: 0.35, options: [{fig:'4.38', yaw:-0.32, pitch:0.34}, {fig:'4.39', yaw:-0.25, pitch:0.35}] }
+        ];
+
+        function setMiniSub(secIdx, optIdx) {
+            let sim = miniSims[secIdx]; sim.subIdx = optIdx; let opt = sim.options[optIdx]; sim.yaw = opt.yaw; sim.pitch = opt.pitch;
+            for (let k = 0; k < sim.options.length; k++) { let b = document.getElementById(`sub${secIdx}_${k}`); if (b) b.classList.toggle('selected', k === optIdx); }
+        }
+        function toggleMiniRot(idx, btnId) { miniSims[idx].auto = !miniSims[idx].auto; let btn = document.getElementById(btnId); if(btn){ btn.classList.toggle('active', miniSims[idx].auto); btn.innerText = miniSims[idx].auto ? "⏸️ Dừng" : "▶️ Tự xoay"; } }
+        function resetMiniView(idx) { let sim = miniSims[idx]; sim.auto = false; let btn = document.getElementById('btnRot'+idx); if(btn){ btn.classList.remove('active'); btn.innerText = "▶️ Tự xoay"; } sim.yaw = sim.options[sim.subIdx].yaw; sim.pitch = sim.options[sim.subIdx].pitch; }
+
+        function bindDragRotate(canvas, stateObj, isMain = false, miniIdx = -1) {
+            const getPos = (e) => (e.touches && e.touches.length > 0) ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+            const start = (e) => { stateObj.dragging = true; if(isMain){stateObj.autoRotate=false; updateMainRotBtn();} else { stateObj.auto=false; let btn = document.getElementById('btnRot'+miniIdx); if(btn){btn.classList.remove('active'); btn.innerText="▶️ Tự xoay";} } let pos = getPos(e); stateObj.lastX = pos.x; stateObj.lastY = pos.y; };
+            const move = (e) => { if (!stateObj.dragging) return; if(e.cancelable) e.preventDefault(); let pos = getPos(e); stateObj.yaw += (pos.x - stateObj.lastX)*0.012; stateObj.pitch = Math.max(-1.45, Math.min(1.45, stateObj.pitch + (pos.y - stateObj.lastY)*0.012)); stateObj.lastX = pos.x; stateObj.lastY = pos.y; };
+            const end = () => { stateObj.dragging = false; };
+            canvas.addEventListener('mousedown', start); window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+            canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', move, { passive: false }); canvas.addEventListener('touchend', end);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let mainC = document.getElementById('main3DCanvas'); if (mainC) bindDragRotate(mainC, mainSim, true);
+            miniSims.forEach((sim, idx) => { let c = document.getElementById(sim.id); if (c) bindDragRotate(c, sim, false, idx); });
+            function animateLoop() {
+                if (mainC) { if(mainSim.autoRotate && !mainSim.dragging) mainSim.yaw += 0.008; let ctx = mainC.getContext('2d'); ctx.clearRect(0,0,mainC.width,mainC.height); renderSGKFigure3D(ctx, mainFigList[mainSim.mode].fig, mainSim.yaw, mainSim.pitch, 70, mainC.width/2, mainC.height/2+10); }
+                miniSims.forEach(sim => { let c = document.getElementById(sim.id); if (c) { if(sim.auto && !sim.dragging) sim.yaw += 0.009; let ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); renderSGKFigure3D(ctx, sim.options[sim.subIdx].fig, sim.yaw, sim.pitch, 50, c.width/2, c.height/2+10); } });
+                requestAnimationFrame(animateLoop);
+            }
+            animateLoop();
+        });
+
+        // --- UI & TẠO ĐỀ ---
+        let currentFontSize = 14; let currentIlluSize = 300; let isExpanded = false;
+        function changeFontSize(delta) { currentFontSize = Math.max(10, Math.min(32, currentFontSize + delta)); document.documentElement.style.setProperty('--font-size', currentFontSize + 'pt'); document.getElementById('font-size-display').innerText = currentFontSize + 'pt'; }
+        function changeIlluSize(delta) { currentIlluSize = Math.max(160, currentIlluSize + delta); document.documentElement.style.setProperty('--illu-size', currentIlluSize + 'px'); document.getElementById('illu-size-display').innerText = currentIlluSize + 'px'; }
+        function toggleWidth() { isExpanded = !isExpanded; document.body.style.maxWidth = isExpanded ? '100%' : '1020px'; }
+        function toggleFullScreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{}); else if (document.exitFullscreen) document.exitFullscreen(); }
+
+        let questionCounter = 1;
+        function shuffle(a) { for(let i = a.length-1; i>0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+        function genT1() {
+            let bank = [
+                { q: `Đường thẳng $d$ song song với mặt phẳng $(\\alpha)$ khi:`, ans: `$d$ và $(\\alpha)$ không có điểm chung.`, w1: `$d$ nằm trong $(\\alpha)$.`, w2: `$d$ và $(\\alpha)$ cắt nhau tại 1 điểm.`, w3: `$d$ và $(\\alpha)$ có 2 điểm chung.` },
+                { q: `Đường thẳng $d$ không nằm trong $(P)$ và song song với đường thẳng $d'$ nằm trong $(P)$. Khi đó:`, ans: `$d \\parallel (P)$.`, w1: `$d$ cắt $(P)$.`, w2: `$d \\subset (P)$.`, w3: `$d$ và $(P)$ vuông góc.` },
+                { q: `Cho đường thẳng $a \\parallel (P)$. Nếu mặt phẳng $(Q)$ chứa $a$ và cắt $(P)$ theo giao tuyến $b$ thì:`, ans: `$b \\parallel a$.`, w1: `$b$ cắt $a$.`, w2: `$b$ chéo $a$.`, w3: `$b \\perp a$.` }
+            ];
+            let item = bank[Math.floor(Math.random()*bank.length)];
+            let opts = shuffle([{t:item.ans,v:true},{t:item.w1,v:false},{t:item.w2,v:false},{t:item.w3,v:false}]);
+            let html = `<div class="question type1-q"><div><b>Câu ${questionCounter++}:</b> ${item.q}</div><ul class="options">`;
+            let lbl = ['A','B','C','D']; opts.forEach((o,i) => html += `<li><label><input type="radio" name="q1_${questionCounter}" value="${o.v}"> <b>${lbl[i]}.</b> ${o.t}</label></li>`); return html + `</ul></div>`;
+        }
+
+        function genT2() {
+            let html = `<div class="question type2-q"><div><b>Câu ${questionCounter++}:</b> Xét tính đúng sai của các mệnh đề sau về đường thẳng và mặt phẳng song song:</div><div class="table-responsive"><table class="tf-table"><tbody>`;
+            let stmts = shuffle([
+                { s: `Nếu $d \\parallel (P)$ thì $d$ song song với mọi đường thẳng nằm trong $(P)$.`, v: "false" },
+                { s: `Nếu $d \\parallel (P)$ thì trong $(P)$ có vô số đường thẳng song song với $d$.`, v: "true" },
+                { s: `Đường thẳng và mặt phẳng không có điểm chung thì chúng song song.`, v: "true" },
+                { s: `Hai đường thẳng cùng song song với một mặt phẳng thì song song với nhau.`, v: "false" }
+            ]);
+            let lbl = ['a','b','c','d']; stmts.slice(0,4).forEach((st,i) => {
+                html += `<tr data-ans="${st.v}"><td><b>${lbl[i]})</b> ${st.s}</td><td style="width:100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="true"> Đúng</label></td><td style="width:100px;"><label><input type="radio" name="q2_${questionCounter}_${i}" value="false"> Sai</label></td><td style="width:140px;"><span class="feedback"></span></td></tr>`;
+            }); return html + `</tbody></table></div></div>`;
+        }
+
+        function genT3() {
+            let h = Math.floor(Math.random()*10)+5, w = Math.floor(Math.random()*10)+5;
+            return `<div class="question type3-q"><div><b>Câu ${questionCounter++}:</b> Cho tứ diện $ABCD$. Mặt phẳng $(P)$ qua trung điểm $AC$, song song $AB, CD$ tạo ra thiết diện $EFGH$ là hình bình hành. Nếu $AB = ${h*2}$ và $CD = ${w*2}$, tính chu vi thiết diện.</div><div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;"><label><b>Trả lời: </b></label><input type="text" class="short-ans-input" data-ans="${(h+w)*2}" placeholder="Nhập số..."><span class="feedback"></span></div></div>`;
+        }
+
+        function generateTest() {
+            let n1 = parseInt(document.getElementById('numType1').value), n2 = parseInt(document.getElementById('numType2').value), n3 = parseInt(document.getElementById('numType3').value);
+            let content = document.getElementById('test-content'); questionCounter = 1; let html = "";
+            if(n1>0) { html += "<h3>Phần I: Câu trắc nghiệm nhiều phương án</h3>"; for(let i=0;i<n1;i++) html += genT1(); }
+            if(n2>0) { html += "<h3 style='margin-top:25px;'>Phần II: Câu trắc nghiệm đúng sai</h3>"; for(let i=0;i<n2;i++) html += genT2(); }
+            if(n3>0) { html += "<h3 style='margin-top:25px;'>Phần III: Câu trả lời ngắn</h3>"; for(let i=0;i<n3;i++) html += genT3(); }
+            content.innerHTML = html; document.getElementById('output').style.display='block'; document.getElementById('submitBtn').style.display='inline-block'; document.getElementById('score-display').innerHTML=''; document.getElementById('advice-display').style.display='none';
+            if (window.MathJax) { MathJax.typesetClear([content]); MathJax.typesetPromise([content]); }
+            document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function checkAnswers() {
+            let total = 0, max = 0;
+            document.querySelectorAll('.type1-q').forEach(q => { max++; let ans=false; q.querySelectorAll('input').forEach(r => { let li=r.closest('li'); li.classList.remove('is-correct','is-incorrect'); li.style.border="1px solid transparent"; if(r.checked){ ans=true; if(r.value==="true"){li.classList.add('is-correct');total++;} else li.classList.add('is-incorrect'); } if(r.value==="true"&&ans) li.style.border="2px solid var(--correct-border)"; }); });
+            document.querySelectorAll('.type2-q tr[data-ans]').forEach(r => { max++; let c=r.getAttribute('data-ans'), f=r.querySelector('.feedback'), ck=null; r.classList.remove('is-correct','is-incorrect'); f.innerHTML=""; r.querySelectorAll('input').forEach(i=>{if(i.checked)ck=i.value;}); if(ck!==null){ if(ck===c){r.classList.add('is-correct');f.innerHTML="✔ ĐÚNG";f.className="feedback text-correct";total++;} else{r.classList.add('is-incorrect');f.innerHTML=`✘ SAI`;f.className="feedback text-incorrect";} } });
+            document.querySelectorAll('.short-ans-input').forEach(i => { max++; let c=i.getAttribute('data-ans'), u=i.value.trim().replace(',','.'), f=i.nextElementSibling; i.classList.remove('is-correct','is-incorrect'); if(u!==""){ if(Number(u)===Number(c)){i.classList.add('is-correct');f.innerHTML="✔";f.className="feedback text-correct";total++;} else{i.classList.add('is-incorrect');f.innerHTML=`✘`;f.className="feedback text-incorrect";} } });
+            let p = max===0?0:Math.round((total/max)*100);
+            let s = document.getElementById('score-display'), a = document.getElementById('advice-display');
+            s.innerHTML = `Bạn đã đạt: ${total} / ${max} điểm (${p}%)`; a.style.display = 'block';
+            a.style.backgroundColor = p<50?'#f8d7da':p<80?'#fff3cd':'#d4edda'; a.style.color = p<50?'#721c24':p<80?'#856404':'#155724';
+            a.innerHTML = p<50?"Hãy ôn lại lý thuyết!":p<80?"Khá tốt!":"Xuất sắc!";
+            s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>
